@@ -1,9 +1,21 @@
+import type { ReactNode } from "react";
 import css from "./Modal.module.css";
 
-export default function Modal() {
+interface ModalProps {
+  children: ReactNode;
+  onClose: () => void;
+}
+
+export default function Modal({ children, onClose }: ModalProps) {
+  const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+
   return (
-    <div className={css.backdrop} role="dialog" aria-modal="true">
-      <div className={css.modal}>{/* */}</div>
+    <div className={css.backdrop} role="dialog" aria-modal="true" onClick={handleBackdropClick}>
+      <div className={css.modal}>{children}</div>
     </div>
   );
 }

@@ -1,6 +1,10 @@
 import css from "./NoteForm.module.css";
 
-export default function NoteForm() {
+interface NoteFormProps {
+  onCancel: () => void;
+}
+
+export default function NoteForm({ onCancel }: NoteFormProps) {
     return (
     <form className={css.form}>
   <div className={css.formGroup}>
@@ -33,13 +37,13 @@ export default function NoteForm() {
   </div>
 
   <div className={css.actions}>
-    <button type="button" className={css.cancelButton}>
+    <button type="button" className={css.cancelButton} onClick={onCancel}>
       Cancel
     </button>
     <button
       type="submit"
       className={css.submitButton}
-      disabled=false
+      disabled={false}
     >
       Create note
     </button>
