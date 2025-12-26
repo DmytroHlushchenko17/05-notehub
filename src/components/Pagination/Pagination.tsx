@@ -28,6 +28,8 @@ const Pagination = ({
       breakLabel="..."
       forcePage={currentPage - 1}
       pageCount={pageCount}
+      marginPagesDisplayed={0}
+      pageRangeDisplayed={pageCount}
       onPageChange={(selectedItem) => onChangePage(selectedItem.selected + 1)}
     />
   );

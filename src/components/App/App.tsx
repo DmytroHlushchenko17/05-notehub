@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { useQuery, keepPreviousData } from "@tanstack/react-query";
-import NoteList from "../NoteList/NoteList";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import css from "./App.module.css";
 import SearchBox from "../SearchBox/SearchBox";
 import Pagination from "../Pagination/Pagination";
@@ -11,29 +10,36 @@ import Loader from "../Loader/Loader";
 import ErrorMessage from "../ErrorMessage/ErrorMessage";
 import { fetchNotes } from "../../services/noteService";
 import { Toaster } from "react-hot-toast";
+import type { FetchNotesParams, FetchNotesResponse } from "../../types/note";
+import NoteList from "../NoteList/NoteList";
+
+const PER_PAGE = 12;
 
 export default function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const debouncedSearchQuery = useDebounce(searchQuery, 500);
+  const [debouncedSearchQuery] = useDebounce(searchQuery, 500);
   const [page, setPage] = useState(1);
 
-  const { data, isError, isPending, isFetching } = useQuery({
-    queryKey: ["notes", debouncedSearchQuery, page],
-    queryFn: () => fetchNotes(debouncedSearchQuery, page),
+  const queryParams: FetchNotesParams = {
+    page,
+    perPage: PER_PAGE,
+    search: debouncedSearchQuery,
+  };
+
+  const { data, isPending, isError } = useQuery<FetchNotesResponse>({
+    queryKey: ["notes", queryParams],
+    queryFn: () => fetchNotes(queryParams),
     placeholderData: keepPreviousData,
   });
 
   const notes = data?.notes ?? [];
-  const totalPages = data?.total_pages ?? 0;
-
-  const openModal = () => setIsModalOpen(true);
-  const closeModal = () => setIsModalOpen(false);
+  const totalPages = data?.totalPages ?? 0;
 
   return (
     <div className={css.app}>
       <header className={css.toolbar}>
-        <SearchBox onSearch={setSearchQuery} />
+        <SearchBox value={searchQuery} onSearch={setSearchQuery} />
         {totalPages > 1 && (
           <Pagination
             currentPage={page}
@@ -42,26 +48,19 @@ export default function App() {
           />
         )}
 
-        <button className={css.button} onClick={openModal}>
+        <button className={css.button} onClick={() => setIsModalOpen(true)}>
           Create note +
         </button>
       </header>
+
       {isPending && <Loader />}
       {isError && <ErrorMessage />}
-
-      {!isPending && !isError && (
-        <div style={{ opacity: isFetching ? 0.6 : 1 }}>
-          {" "}
-          <NoteList notes={notes} />
-        </div>
-      )}
-
+      {!isPending && !isError && notes.length > 0 && <NoteList notes={notes} />}
       {isModalOpen && (
-        <Modal onClose={closeModal}>
-          <NoteForm onCancel={closeModal} onSuccess={closeModal} />
+        <Modal onClose={() => setIsModalOpen(false)}>
+          <NoteForm onCancel={() => setIsModalOpen(false)} />
         </Modal>
       )}
-
       <Toaster
         toastOptions={{
           success: { style: { background: "green", color: "white" } },

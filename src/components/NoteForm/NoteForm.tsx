@@ -18,14 +18,15 @@ const validationSchema = Yup.object({
     .required(),
 });
 
-export default function NoteForm({ onCancel, onSuccess }: NoteFormProps) {
+const NoteForm = ({ onCancel, onSuccess }: NoteFormProps) => {
   const queryClient = useQueryClient();
 
   const createNoteMutation = useMutation({
     mutationFn: createNote,
     onSuccess: () => {
       queryClient.invalidateQueries({
-        predicate: (q) => Array.isArray(q.queryKey) && q.queryKey[0] === "notes",
+        predicate: (q) =>
+          Array.isArray(q.queryKey) && q.queryKey[0] === "notes",
       });
       onSuccess();
       toast.success("Note created successfully");
@@ -45,8 +46,10 @@ export default function NoteForm({ onCancel, onSuccess }: NoteFormProps) {
     <Formik
       initialValues={initialValues}
       validationSchema={validationSchema}
-      onSubmit={(values) => {
-        createNoteMutation.mutate(values as unknown as NoteCreate);
+      onSubmit={(values, { resetForm }) => {
+        createNoteMutation.mutate(values as unknown as NoteCreate, {
+          onSuccess: () => resetForm(),
+        });
       }}
     >
       <Form className={css.form}>
@@ -91,4 +94,6 @@ export default function NoteForm({ onCancel, onSuccess }: NoteFormProps) {
       </Form>
     </Formik>
   );
-}
+};
+
+export default NoteForm;
