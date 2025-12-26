@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Toaster, toast } from "react-hot-toast";
 import NoteList from "../NoteList/NoteList";
@@ -11,7 +11,6 @@ import NoteForm from "../NoteForm/NoteForm";
 import Loader from "../Loader/Loader";
 import ErrorMessage from "../ErrorMessage/ErrorMessage";
 import { deleteNote, fetchNotes, createNote } from "../../services/noteService";
-
 
 export default function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -26,7 +25,7 @@ export default function App() {
     queryFn: () => fetchNotes(debouncedSearchQuery, page),
   });
 
-  const notes = data?.notes ?? [];  
+  const notes = data?.notes ?? [];
   const totalPages = data?.total_pages ?? 0;
 
   const createNoteMutation = useMutation({
@@ -36,8 +35,8 @@ export default function App() {
       closeModal();
     },
     onError: () => {
-        toast.error('Failed to create note');
-    }
+      toast.error("Failed to create note");
+    },
   });
 
   const deleteNoteMutation = useMutation({
@@ -46,14 +45,9 @@ export default function App() {
       queryClient.invalidateQueries({ queryKey: ["notes"] });
     },
     onError: () => {
-        toast.error('Failed to delete note');
-    }
+      toast.error("Failed to delete note");
+    },
   });
-
-
-  useEffect(() => {
-    setPage(1);
-  }, [debouncedSearchQuery]);
 
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
@@ -86,7 +80,9 @@ export default function App() {
           Create note +
         </button>
       </header>
-      {(isLoading || createNoteMutation.isPending || deleteNoteMutation.isPending) && <Loader />}
+      {(isLoading ||
+        createNoteMutation.isPending ||
+        deleteNoteMutation.isPending) && <Loader />}
       {isError && <ErrorMessage />}
       {!isLoading && !isError && notes?.length > 0 && (
         <NoteList notes={notes} onDelete={handleDeleteNote} />
@@ -96,18 +92,20 @@ export default function App() {
           <NoteForm onCancel={closeModal} onSubmit={handleCreateNote} />
         </Modal>
       )}
-      <Toaster toastOptions={{
-        success: {
-          style: {
-            background: 'green',
+      <Toaster
+        toastOptions={{
+          success: {
+            style: {
+              background: "green",
+            },
           },
-        },
-        error: {
-          style: {
-            background: 'red',
+          error: {
+            style: {
+              background: "red",
+            },
           },
-        },
-      }}/>
+        }}
+      />
     </div>
   );
 }
