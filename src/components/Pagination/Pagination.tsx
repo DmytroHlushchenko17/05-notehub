@@ -16,21 +16,19 @@ const Pagination = ({
 
   return (
     <ReactPaginate
-      containerClassName={css.pagination}
+      pageCount={pageCount}
       pageClassName={css.page}
-      activeClassName={css.active}
       previousClassName={css.page}
       nextClassName={css.page}
       breakClassName={css.page}
-      disabledClassName={css.disabled}
-      previousLabel="<"
-      nextLabel=">"
-      breakLabel="..."
+      pageRangeDisplayed={5}
+      marginPagesDisplayed={1}
+      onPageChange={({ selected }) => onChangePage(selected + 1)}
       forcePage={currentPage - 1}
-      pageCount={pageCount}
-      marginPagesDisplayed={0}
-      pageRangeDisplayed={pageCount}
-      onPageChange={(selectedItem) => onChangePage(selectedItem.selected + 1)}
+      containerClassName={css.pagination}
+      activeClassName={css.active}
+      nextLabel="→"
+      previousLabel="←"
     />
   );
 };

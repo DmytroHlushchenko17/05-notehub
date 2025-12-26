@@ -17,8 +17,8 @@ const PER_PAGE = 12;
 
 export default function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [debouncedSearchQuery] = useDebounce(searchQuery, 500);
+  const [search, setSearch] = useState("");
+  const [debouncedSearchQuery] = useDebounce(search, 500);
   const [page, setPage] = useState(1);
 
   const queryParams: FetchNotesParams = {
@@ -33,13 +33,18 @@ export default function App() {
     placeholderData: keepPreviousData,
   });
 
-  const notes = data?.notes ?? [];
-  const totalPages = data?.totalPages ?? 0;
+  const handleSearchChange = (value: string) => {
+    setSearch(value);
+    setPage(1);
+  };
+
+  const notes = data?.notes || [];
+  const totalPages = data?.totalPages || 0;
 
   return (
     <div className={css.app}>
       <header className={css.toolbar}>
-        <SearchBox value={searchQuery} onSearch={setSearchQuery} />
+        <SearchBox value={search} onChange={handleSearchChange} />
         {totalPages > 1 && (
           <Pagination
             currentPage={page}
