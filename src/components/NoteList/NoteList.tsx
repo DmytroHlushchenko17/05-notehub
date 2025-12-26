@@ -15,7 +15,8 @@ export default function NoteList({ notes }: NoteListProps) {
     mutationFn: deleteNote,
     onSuccess: () => {
       queryClient.invalidateQueries({
-        predicate: (q) => Array.isArray(q.queryKey) && q.queryKey[0] === "notes",
+        predicate: (q) =>
+          Array.isArray(q.queryKey) && q.queryKey[0] === "notes",
       });
       toast.success("Note deleted successfully");
     },
@@ -35,9 +36,9 @@ export default function NoteList({ notes }: NoteListProps) {
             <button
               className={css.button}
               onClick={() => deleteMutation.mutate(note.id)}
-              disabled={deleteMutation.isLoading}
+              disabled={deleteMutation.isPending}
             >
-              {deleteMutation.isLoading ? "Deleting..." : "Delete"}
+              {deleteMutation.isPending ? "Deleting..." : "Delete"}
             </button>
           </div>
         </li>
