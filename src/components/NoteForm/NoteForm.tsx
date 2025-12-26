@@ -1,25 +1,40 @@
 import css from "./NoteForm.module.css";
+import { type NoteCreate, createNote } from "../../services/noteService";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
-import type { NoteCreate } from "../../types/note";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import toast from "react-hot-toast";
 
 interface NoteFormProps {
   onCancel: () => void;
-  onSubmit: (note: NoteCreate & { tag: string }) => void;
+  onSuccess: () => void;
 }
 
 const validationSchema = Yup.object({
-  title: Yup.string()
-    .min(3)
-    .max(50)
-    .required(),
+  title: Yup.string().min(3).max(50).required(),
   content: Yup.string().max(500),
   tag: Yup.string()
     .oneOf(["Todo", "Work", "Personal", "Meeting", "Shopping"])
     .required(),
 });
 
-export default function NoteForm({ onCancel, onSubmit }: NoteFormProps) {
+export default function NoteForm({ onCancel, onSuccess }: NoteFormProps) {
+  const queryClient = useQueryClient();
+
+  const createNoteMutation = useMutation({
+    mutationFn: createNote,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        predicate: (q) => Array.isArray(q.queryKey) && q.queryKey[0] === "notes",
+      });
+      onSuccess();
+      toast.success("Note created successfully");
+    },
+    onError: () => {
+      toast.error("Failed to create note");
+    },
+  });
+
   const initialValues = {
     title: "",
     content: "",
@@ -31,8 +46,7 @@ export default function NoteForm({ onCancel, onSubmit }: NoteFormProps) {
       initialValues={initialValues}
       validationSchema={validationSchema}
       onSubmit={(values) => {
-        onSubmit(values);
-        onCancel();
+        createNoteMutation.mutate(values as unknown as NoteCreate);
       }}
     >
       <Form className={css.form}>

@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Toaster, toast } from "react-hot-toast";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import NoteList from "../NoteList/NoteList";
 import css from "./App.module.css";
 import SearchBox from "../SearchBox/SearchBox";
@@ -10,7 +9,8 @@ import Modal from "../Modal/Modal";
 import NoteForm from "../NoteForm/NoteForm";
 import Loader from "../Loader/Loader";
 import ErrorMessage from "../ErrorMessage/ErrorMessage";
-import { deleteNote, fetchNotes, createNote } from "../../services/noteService";
+import { fetchNotes } from "../../services/noteService";
+import { Toaster } from "react-hot-toast";
 
 export default function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -18,51 +18,17 @@ export default function App() {
   const debouncedSearchQuery = useDebounce(searchQuery, 500);
   const [page, setPage] = useState(1);
 
-  const queryClient = useQueryClient();
-
-  const { data, isError, isLoading } = useQuery({
+  const { data, isError, isPending, isFetching } = useQuery({
     queryKey: ["notes", debouncedSearchQuery, page],
     queryFn: () => fetchNotes(debouncedSearchQuery, page),
+    placeholderData: keepPreviousData,
   });
 
   const notes = data?.notes ?? [];
   const totalPages = data?.total_pages ?? 0;
 
-  const createNoteMutation = useMutation({
-    mutationFn: createNote,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["notes"] });
-      closeModal();
-    },
-    onError: () => {
-      toast.error("Failed to create note");
-    },
-  });
-
-  const deleteNoteMutation = useMutation({
-    mutationFn: deleteNote,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["notes"] });
-    },
-    onError: () => {
-      toast.error("Failed to delete note");
-    },
-  });
-
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
-
-  const handleCreateNote = (note: {
-    title: string;
-    content: string;
-    tag: string;
-  }) => {
-    createNoteMutation.mutate(note);
-  };
-
-  const handleDeleteNote = (id: string) => {
-    deleteNoteMutation.mutate(id);
-  };
 
   return (
     <div className={css.app}>
@@ -71,8 +37,8 @@ export default function App() {
         {totalPages > 1 && (
           <Pagination
             currentPage={page}
-            totalPages={totalPages}
-            onChange={setPage}
+            pageCount={totalPages}
+            onChangePage={setPage}
           />
         )}
 
@@ -80,30 +46,26 @@ export default function App() {
           Create note +
         </button>
       </header>
-      {(isLoading ||
-        createNoteMutation.isPending ||
-        deleteNoteMutation.isPending) && <Loader />}
+      {isPending && <Loader />}
       {isError && <ErrorMessage />}
-      {!isLoading && !isError && notes?.length > 0 && (
-        <NoteList notes={notes} onDelete={handleDeleteNote} />
+
+      {!isPending && !isError && (
+        <div style={{ opacity: isFetching ? 0.6 : 1 }}>
+          {" "}
+          <NoteList notes={notes} />
+        </div>
       )}
+
       {isModalOpen && (
         <Modal onClose={closeModal}>
-          <NoteForm onCancel={closeModal} onSubmit={handleCreateNote} />
+          <NoteForm onCancel={closeModal} onSuccess={closeModal} />
         </Modal>
       )}
+
       <Toaster
         toastOptions={{
-          success: {
-            style: {
-              background: "green",
-            },
-          },
-          error: {
-            style: {
-              background: "red",
-            },
-          },
+          success: { style: { background: "green", color: "white" } },
+          error: { style: { background: "red", color: "white" } },
         }}
       />
     </div>

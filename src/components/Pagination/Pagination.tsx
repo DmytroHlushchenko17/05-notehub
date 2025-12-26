@@ -1,44 +1,36 @@
+import ReactPaginate from "react-paginate";
 import css from "./Pagination.module.css";
 
 interface PaginationProps {
   currentPage: number;
-  totalPages: number;
-  onChange: (page: number) => void;
+  pageCount: number;
+  onChangePage: (page: number) => void;
 }
 
-export const Pagination: React.FC<PaginationProps> = ({
+const Pagination = ({
   currentPage,
-  totalPages,
-  onChange,
-}) => {
-  const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
+  pageCount,
+  onChangePage,
+}: PaginationProps) => {
+  if (pageCount <= 1) return null;
 
   return (
-    <nav className={css.pagination}>
-      <button
-        disabled={currentPage === 1}
-        onClick={() => onChange(currentPage - 1)}
-      >
-        Prev
-      </button>
-
-      {pages.map((p) => (
-        <button
-          key={p}
-          className={p === currentPage ? css.active : ""}
-          onClick={() => onChange(p)}
-        >
-          {p}
-        </button>
-      ))}
-
-      <button
-        disabled={currentPage === totalPages}
-        onClick={() => onChange(currentPage + 1)}
-      >
-        Next
-      </button>
-    </nav>
+    <ReactPaginate
+      containerClassName={css.pagination}
+      pageClassName={css.page}
+      activeClassName={css.active}
+      previousClassName={css.page}
+      nextClassName={css.page}
+      breakClassName={css.page}
+      disabledClassName={css.disabled}
+      previousLabel="<"
+      nextLabel=">"
+      breakLabel="..."
+      forcePage={currentPage - 1}
+      pageCount={pageCount}
+      onPageChange={(selectedItem) => onChangePage(selectedItem.selected + 1)}
+    />
   );
 };
+
 export default Pagination;

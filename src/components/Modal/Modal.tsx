@@ -21,6 +21,14 @@ export default function Modal({ children, onClose }: ModalProps) {
     };
   }, [onClose]);
 
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, []);
+
   const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) {
       onClose();
@@ -28,7 +36,12 @@ export default function Modal({ children, onClose }: ModalProps) {
   };
 
   return createPortal(
-    <div className={css.backdrop} role="dialog" aria-modal="true" onClick={handleBackdropClick}>
+    <div
+      className={css.backdrop}
+      role="dialog"
+      aria-modal="true"
+      onClick={handleBackdropClick}
+    >
       <div className={css.modal}>{children}</div>
     </div>,
     document.getElementById("root") as HTMLElement
