@@ -58,7 +58,10 @@ export default function App() {
       {!isPending && !isError && notes.length > 0 && <NoteList notes={notes} />}
       {isModalOpen && (
         <Modal onClose={() => setIsModalOpen(false)}>
-          <NoteForm onCancel={() => setIsModalOpen(false)} />
+          <NoteForm
+            onCancel={() => setIsModalOpen(false)}
+            onSuccess={() => setIsModalOpen(false)}
+          />
         </Modal>
       )}
       <Toaster
